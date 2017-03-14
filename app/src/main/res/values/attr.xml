@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="innerCircleColor" format="color" />
+    <attr name="innerCircleSize" format="dimension" />
+    <attr name="outCircleSize" format="dimension" />
+    <attr name="smallCircleSize" format="dimension" />
+    <attr name="smallCircleRadiousSize" format="dimension"/>
+    <declare-styleable name="CircleView">
+        <attr name="innerCircleColor" />
+        <attr name="innerCircleSize" />
+        <attr name="outCircleSize" />
+        <attr name="smallCircleSize" />
+        <attr name="smallCircleRadiousSize"/>
+    </declare-styleable>
+</resources>
