@@ -13,13 +13,16 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author shuiai@dianjia.io
  * @Company 杭州木瓜科技有限公司
  * @date 2017/2/28
  */
 
-public class CircleView extends View {
+public class CircleView<T extends CircleView> extends View {
     private int outSmallCircleRadiousSize;
     private int outSmallCircleSize;
     /**
@@ -73,15 +76,16 @@ public class CircleView extends View {
     /**
      * 最大度数
      */
-    private float drgee;
+    private float degree;
     /**
+     * r
      * 百分比
      */
     private float percentage;
     /**
      * 百分比下的度数
      */
-    private float unitDrgee;
+    private float unitDegree;
 
     /**
      * 初始渐变圆周颜色数组
@@ -91,6 +95,19 @@ public class CircleView extends View {
      * 另外一种渐变颜色
      */
     private int[] gradientColorArrayother = {Color.parseColor("#fb6222"), Color.parseColor("#fb6233"), Color.parseColor("#fb6244"), Color.parseColor("#fb6245")};
+    /**
+     * 画刻度线时，判断循环的次数
+     */
+
+    /**
+     * 属性动画
+     */
+    private ValueAnimator valueAnimator;
+    private float interpolation;
+    /**
+     * 记录上一次的角度
+     */
+    private List<Float> lastDegreeList = new ArrayList();
 
     public CircleView(Context context) {
         this(context, null);
@@ -134,6 +151,7 @@ public class CircleView extends View {
         mOutCirclePaint = new Paint();
         linePaint = new Paint();
         mOutRectf = new RectF();
+        lastDegreeList.add((float) 0);
     }
 
     @Override
@@ -161,7 +179,7 @@ public class CircleView extends View {
         int center = getWidth() / 2;
         canvas.rotate(-45, center, center);
         LinearGradient linearGradient;
-        if (unitDrgee < 90) {
+        if (unitDegree + getLastDegree() < 90) {
             linearGradient = new LinearGradient(0, 0, getMeasuredWidth(), getMeasuredHeight(), gradientColorArray, null, Shader.TileMode.CLAMP);
         } else {
             linearGradient = new LinearGradient(0, 0, getMeasuredWidth(), getMeasuredHeight(), gradientColorArrayother, null, Shader.TileMode.CLAMP);
@@ -189,7 +207,7 @@ public class CircleView extends View {
         mOutRectf.right = getWidth() - outSmallCircleRadiousSize;
         mOutRectf.bottom = getHeight() - outSmallCircleRadiousSize;
         mOutArcPaint.setStrokeCap(Paint.Cap.ROUND);
-        canvas.drawArc(mOutRectf, 180, unitDrgee, false, mOutArcPaint);
+        canvas.drawArc(mOutRectf, 180, unitDegree + getLastDegree(), false, mOutArcPaint);
         /**
          * 画刻度线
          */
@@ -211,13 +229,12 @@ public class CircleView extends View {
         mOutCirclePaint.setStyle(Paint.Style.FILL);
         canvas.drawCircle(r[0], r[1], outSmallCircleRadiousSize - outSmallCircleSize, mOutCirclePaint);
         float angle = 0;
-        while (angle < unitDrgee) {
+        while (angle < (unitDegree + getLastDegree())) {
             canvas.drawLine(outSmallCircleRadiousSize * 2 + 10, center, outSmallCircleRadiousSize * 2 + (innerCircleSize * 3 / 4), center, linePaint);
             canvas.rotate(5, center, center);
             angle += 5;
         }
         canvas.drawLine(outSmallCircleRadiousSize * 2, center, outSmallCircleRadiousSize * 2 + (innerCircleSize * 3 / 4), center, linePaint);
-
     }
 
     /**
@@ -227,8 +244,8 @@ public class CircleView extends View {
      */
     private float[] calculateBallCenter() {
         float[] center = new float[2];
-        float dy = (float) (Math.sin(Math.toRadians(unitDrgee)) * (getWidth() / 2 - outSmallCircleRadiousSize));
-        float dx = (float) (Math.cos(Math.toRadians(unitDrgee)) * (getWidth() / 2 - outSmallCircleRadiousSize));
+        float dy = (float) (Math.sin(Math.toRadians(unitDegree + getLastDegree())) * (getWidth() / 2 - outSmallCircleRadiousSize));
+        float dx = (float) (Math.cos(Math.toRadians(unitDegree + getLastDegree())) * (getWidth() / 2 - outSmallCircleRadiousSize));
         center[0] = getWidth() / 2 - dx;
         center[1] = getWidth() / 2 - dy;
         return center;
@@ -239,8 +256,9 @@ public class CircleView extends View {
      *
      * @param progressMax
      */
-    public void setProgressMax(float progressMax) {
+    public T setProgressMax(float progressMax) {
         this.progressMax = progressMax;
+        return (T) this;
     }
 
     /**
@@ -248,24 +266,58 @@ public class CircleView extends View {
      *
      * @param progress
      */
-    public void setProgress(float progress) {
+    public T setProgress(float progress) {
         this.progress = progress;
+        return (T) this;
+    }
+
+    /**
+     * 获取上次记录的角度与当前角度的差值
+     *
+     * @return
+     */
+    private float getInterpolation() {
+        return degree - getLastDegree();
     }
 
     /**
      * 更新数据和设置动画
      */
     public void update() {
-        drgee = progress / progressMax * 360;
+        degree = progress / progressMax * 360;
+        lastDegreeList.add(degree);
         setAnimation();
+    }
+
+    /**
+     * 清除动画
+     */
+    public void clearAnimator() {
+        if (valueAnimator != null) {
+            valueAnimator.cancel();
+        }
     }
 
     /**
      * 绘制进度
      */
     public void updateProgress() {
-        unitDrgee = percentage / progressMax * 360;
+        unitDegree = percentage;
         invalidate();
+    }
+
+    /**
+     * 获取上次记录的进度
+     *
+     * @return
+     */
+    private float getLastDegree() {
+        float lastDegree = 0;
+        int length = lastDegreeList.size();
+        if (lastDegreeList != null && length > 1) {
+            lastDegree = lastDegreeList.get(length - 2);
+        }
+        return lastDegree;
     }
 
     /**
@@ -278,18 +330,19 @@ public class CircleView extends View {
     }
 
     private void setAnimation() {
-        ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+        valueAnimator = ValueAnimator.ofFloat(0, 1);
         valueAnimator.setDuration(5000);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 float value = (float) valueAnimator.getAnimatedValue();
-                percentage = progress * value;
+                percentage =  getInterpolation() * value;
                 if (addUpdateListener != null) {
                     addUpdateListener.onAddUpdateListener(value);
                 }
                 updateProgress();
             }
+
         });
         valueAnimator.start();
     }
