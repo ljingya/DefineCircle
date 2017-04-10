@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements CircleView.AddUpd
 
     @Override
     public void onClick(View view) {
-        cycleProgressView.setProgress(400).update();
+        progress=400;
+        cycleProgressView.setProgress(progress).update();
     }
 }
