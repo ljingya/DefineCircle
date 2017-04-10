@@ -96,10 +96,6 @@ public class CircleView<T extends CircleView> extends View {
      */
     private int[] gradientColorArrayother = {Color.parseColor("#fb6222"), Color.parseColor("#fb6233"), Color.parseColor("#fb6244"), Color.parseColor("#fb6245")};
     /**
-     * 画刻度线时，判断循环的次数
-     */
-
-    /**
      * 属性动画
      */
     private ValueAnimator valueAnimator;
