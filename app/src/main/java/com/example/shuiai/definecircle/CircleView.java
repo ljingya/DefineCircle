@@ -23,8 +23,11 @@ import java.util.List;
  */
 
 public class CircleView<T extends CircleView> extends View {
+    private AddUpdateListener addUpdateListener;
+    /**
+     * 内圆的半径
+     */
     private int outSmallCircleRadiousSize;
-    private int outSmallCircleSize;
     /**
      * 外层圆的宽度
      */
@@ -34,25 +37,13 @@ public class CircleView<T extends CircleView> extends View {
      */
     private int innerCircleSize;
     /**
-     * 内层圆的颜色
-     */
-    private int innerColor;
-    /**
      * 内层圆的画笔
      */
-    private Paint mInnerPaint;
-    /**
-     * 外层圆的画笔
-     */
-    private Paint mOutArcPaint;
+    private Paint mPaint;
     /**
      * 外层圆弧的矩形
      */
     private RectF mOutRectf;
-    /**
-     * 外层小圆
-     */
-    private Paint mOutCirclePaint;
     /**
      * 画线的笔
      */
@@ -99,7 +90,6 @@ public class CircleView<T extends CircleView> extends View {
      * 属性动画
      */
     private ValueAnimator valueAnimator;
-    private float interpolation;
     /**
      * 记录上一次的角度
      */
@@ -120,17 +110,11 @@ public class CircleView<T extends CircleView> extends View {
         for (int i = 0; i < n; i++) {
             int arr = a.getIndex(i);
             switch (arr) {
-                case R.styleable.CircleView_innerCircleColor:
-                    innerColor = a.getColor(arr, Color.BLUE);
-                    break;
                 case R.styleable.CircleView_innerCircleSize:
                     innerCircleSize = a.getDimensionPixelSize(arr, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics()));
                     break;
                 case R.styleable.CircleView_outCircleSize:
                     outCircleSize = a.getDimensionPixelSize(arr, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics()));
-                    break;
-                case R.styleable.CircleView_smallCircleSize:
-                    outSmallCircleSize = a.getDimensionPixelSize(arr, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics()));
                     break;
                 case R.styleable.CircleView_smallCircleRadiousSize:
                     outSmallCircleRadiousSize = a.getDimensionPixelSize(arr, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics()));
@@ -142,9 +126,7 @@ public class CircleView<T extends CircleView> extends View {
     }
 
     private void init() {
-        mInnerPaint = new Paint();
-        mOutArcPaint = new Paint();
-        mOutCirclePaint = new Paint();
+        mPaint = new Paint();
         linePaint = new Paint();
         mOutRectf = new RectF();
         lastDegreeList.add((float) 0);
@@ -181,29 +163,29 @@ public class CircleView<T extends CircleView> extends View {
             linearGradient = new LinearGradient(0, 0, getMeasuredWidth(), getMeasuredHeight(), gradientColorArrayother, null, Shader.TileMode.CLAMP);
 
         }
-        mInnerPaint.setShader(linearGradient);
+        mPaint.setShader(linearGradient);
         /**
          * 先画内圆
          */
-        mInnerPaint.setAntiAlias(true);
-        mInnerPaint.setStyle(Paint.Style.STROKE);
-        mInnerPaint.setStrokeWidth(innerCircleSize);
+        mPaint.setAntiAlias(true);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(innerCircleSize);
         int radious = center - outSmallCircleRadiousSize * 2 - innerCircleSize / 2;
-        canvas.drawCircle(getMeasuredWidth() / 2, getMeasuredHeight() / 2, radious, mInnerPaint);
-
+        canvas.drawCircle(getMeasuredWidth() / 2, getMeasuredHeight() / 2, radious, mPaint);
+        mPaint.clearShadowLayer();
 /**
  * 外圆
  */
-        mOutArcPaint.setShader(linearGradient);
-        mOutArcPaint.setAntiAlias(true);
-        mOutArcPaint.setStrokeWidth(outCircleSize);
-        mOutArcPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setShader(linearGradient);
+        mPaint.setAntiAlias(true);
+        mPaint.setStrokeWidth(outCircleSize);
+        mPaint.setStyle(Paint.Style.STROKE);
         mOutRectf.left = outSmallCircleRadiousSize;
         mOutRectf.top = outSmallCircleRadiousSize;
         mOutRectf.right = getWidth() - outSmallCircleRadiousSize;
         mOutRectf.bottom = getHeight() - outSmallCircleRadiousSize;
-        mOutArcPaint.setStrokeCap(Paint.Cap.ROUND);
-        canvas.drawArc(mOutRectf, 180, unitDegree + getLastDegree(), false, mOutArcPaint);
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        canvas.drawArc(mOutRectf, 180, unitDegree + getLastDegree(), false, mPaint);
         /**
          * 画刻度线
          */
@@ -216,14 +198,14 @@ public class CircleView<T extends CircleView> extends View {
         /**
          * 画小圆
          */
-        mOutCirclePaint.setShader(linearGradient);
-        mOutCirclePaint.setAntiAlias(true);
-        mOutCirclePaint.setStyle(Paint.Style.STROKE);
-        mOutCirclePaint.setStrokeWidth(10);
+        mPaint.setShader(linearGradient);
+        mPaint.setAntiAlias(true);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(10);
         float[] r = calculateBallCenter();
-        canvas.drawCircle(r[0], r[1], outSmallCircleRadiousSize, mOutCirclePaint);
-        mOutCirclePaint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(r[0], r[1], outSmallCircleRadiousSize - outSmallCircleSize, mOutCirclePaint);
+        canvas.drawCircle(r[0], r[1], outSmallCircleRadiousSize-5, mPaint);
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(r[0], r[1], outSmallCircleRadiousSize -17, mPaint);
         float angle = 0;
         while (angle < (unitDegree + getLastDegree())) {
             canvas.drawLine(outSmallCircleRadiousSize * 2 + 10, center, outSmallCircleRadiousSize * 2 + (innerCircleSize * 3 / 4), center, linePaint);
@@ -288,7 +270,7 @@ public class CircleView<T extends CircleView> extends View {
     /**
      * 清除动画
      */
-    public void clearAnimator() {
+    private void clearAnimator() {
         if (valueAnimator != null) {
             valueAnimator.cancel();
         }
@@ -332,7 +314,7 @@ public class CircleView<T extends CircleView> extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 float value = (float) valueAnimator.getAnimatedValue();
-                percentage =  getInterpolation() * value;
+                percentage = getInterpolation() * value;
                 if (addUpdateListener != null) {
                     addUpdateListener.onAddUpdateListener(value);
                 }
@@ -343,7 +325,6 @@ public class CircleView<T extends CircleView> extends View {
         valueAnimator.start();
     }
 
-    private AddUpdateListener addUpdateListener;
 
     public void setAddUpdateListener(AddUpdateListener addUpdateListener) {
         this.addUpdateListener = addUpdateListener;
@@ -351,5 +332,11 @@ public class CircleView<T extends CircleView> extends View {
 
     public interface AddUpdateListener {
         void onAddUpdateListener(float percentage);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        clearAnimator();
+        super.onDetachedFromWindow();
     }
 }

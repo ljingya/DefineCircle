@@ -16,15 +16,15 @@ public class MainActivity extends AppCompatActivity implements CircleView.AddUpd
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        cycleProgressView = (CircleView) findViewById(R.id.progressBar);
-        cycleProgressView.setProgressMax(500)
-                         .setProgress(progress)
-                         .update();
-//        cycleProgressView.setColorArray(gradientColorArray);
-        cycleProgressView.setAddUpdateListener(this);
         textView = (TextView) findViewById(R.id.text);
         updateButton = (Button) findViewById(R.id.updateButton);
         updateButton.setOnClickListener(this);
+        cycleProgressView = (CircleView) findViewById(R.id.progressBar);
+        cycleProgressView.setProgressMax(500)
+                .setProgress(progress)
+                .update();
+//        cycleProgressView.setColorArray(gradientColorArray);
+        cycleProgressView.setAddUpdateListener(this);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements CircleView.AddUpd
 
     @Override
     public void onClick(View view) {
-        progress=400;
+        progress = 400;
         cycleProgressView.setProgress(progress).update();
     }
 }

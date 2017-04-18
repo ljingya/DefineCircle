@@ -16,11 +16,10 @@
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_centerInParent="true"
-            custom:innerCircleColor="#7DDCFE"
             custom:innerCircleSize="20dp"
             custom:outCircleSize="5dp"
             custom:smallCircleRadiousSize="10dp"
-            custom:smallCircleSize="5dp" />
+           />
 
         <TextView
             android:id="@+id/text"
